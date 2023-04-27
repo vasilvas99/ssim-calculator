@@ -37,25 +37,28 @@ def calculate_ssim_score(video_a_path,
     vid_a_frame_iter = vid_a_ctr.decode(video=0)
     vid_b_frame_iter = vid_b_ctr.decode(video=0)
 
-    frame_numbers = []
+    processed_frames = []
     ssim_results = []
     for idx, (frame_a,
               frame_b) in enumerate(zip(vid_a_frame_iter, vid_b_frame_iter)):
-        if max_frames is not None and idx >= max_frames:
+      
+        if max_frames is not None and len(processed_frames) > max_frames:
             break
         if idx % n_skip_frames != 0:
             continue
+        
         ssim_results.append(
             calculate_frame_similarity(frame_a, frame_b, crop_side))
-        frame_numbers.append(idx)
+        processed_frames.append(idx)
 
-    vid_a_frame_iter = np.array(frame_numbers)
+
+    vid_a_frame_iter = np.array(processed_frames)
     ssim_results = np.array(ssim_results)
 
     vid_a_ctr.close()
     vid_b_ctr.close()
 
-    return frame_numbers, ssim_results
+    return processed_frames, ssim_results
 
 
 def parse_cli():
@@ -76,15 +79,15 @@ def parse_cli():
         "-n",
         "--num-skip-frames",
         type=int,
-        default=30,
+        default=15,
         help="Step between frames for which SSIM is evaluated. [Default: 30]",
     )
     parser.add_argument(
         "-m",
         "--max_num_frames",
         type=int,
-        default=200_000,
-        help="Maximum number of frames to be processed. [Default: 200000]",
+        default=500,
+        help="Maximum number of frames to be processed. [Default: 500]",
     )
 
     parser.add_argument(
