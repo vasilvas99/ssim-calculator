@@ -80,7 +80,7 @@ def parse_cli():
         "--num-skip-frames",
         type=int,
         default=15,
-        help="Step between frames for which SSIM is evaluated. [Default: 30]",
+        help="Step between frames for which SSIM is evaluated. [Default: 15]",
     )
     parser.add_argument(
         "-m",
