@@ -6,7 +6,7 @@ from pathvalidate.argparse import validate_filepath_arg
 from skimage.metrics import structural_similarity as ssim
 
 
-def calculate_frame_similarity(frame_a, frame_b, crop_side = 0):
+def calculate_frame_similarity(frame_a, frame_b, crop_side=0):
     a = frame_a.to_ndarray(format="rgb24")
     b = frame_b.to_ndarray(format="rgb24")
 
@@ -15,16 +15,19 @@ def calculate_frame_similarity(frame_a, frame_b, crop_side = 0):
         b = crop_center(b, crop_side)
     return ssim(a, b, channel_axis=2)
 
+
 def crop_center(img, crop_side):
-    y,x, _ = img.shape
-    startx = x//2-(crop_side//2)
-    starty = y//2-(crop_side//2)    
-    return img[starty:starty+crop_side,startx:startx+crop_side, :]
+    y, x, _ = img.shape
+    startx = x // 2 - (crop_side // 2)
+    starty = y // 2 - (crop_side // 2)
+    return img[starty:starty + crop_side, startx:startx + crop_side, :]
+
 
 def calculate_ssim_score(video_a_path,
                          video_b_path,
                          n_skip_frames=30,
-                         max_frames=None, crop_side = 0):
+                         max_frames=None,
+                         crop_side=0):
     vid_a_ctr = av.open(video_a_path)
     vid_b_ctr = av.open(video_b_path)
 
@@ -42,7 +45,8 @@ def calculate_ssim_score(video_a_path,
             break
         if idx % n_skip_frames != 0:
             continue
-        ssim_results.append(calculate_frame_similarity(frame_a, frame_b, crop_side))
+        ssim_results.append(
+            calculate_frame_similarity(frame_a, frame_b, crop_side))
         frame_numbers.append(idx)
 
     vid_a_frame_iter = np.array(frame_numbers)
@@ -56,33 +60,41 @@ def calculate_ssim_score(video_a_path,
 
 def parse_cli():
     parser = GooeyParser()
-    parser.add_argument("source_path",
-                        type=validate_filepath_arg,
-                        help="Path to source video file",
-                        widget="FileChooser")
-    parser.add_argument("encode_path",
-                        type=validate_filepath_arg,
-                        help="Path to encoded video file",
-                        widget="FileChooser")
     parser.add_argument(
-        '-n',
-        '--num-skip-frames',
+        "source_path",
+        type=validate_filepath_arg,
+        help="Path to source video file",
+        widget="FileChooser",
+    )
+    parser.add_argument(
+        "encode_path",
+        type=validate_filepath_arg,
+        help="Path to encoded video file",
+        widget="FileChooser",
+    )
+    parser.add_argument(
+        "-n",
+        "--num-skip-frames",
         type=int,
         default=30,
-        help="Step between frames for which SSIM is evaluated. [Default: 30]")
+        help="Step between frames for which SSIM is evaluated. [Default: 30]",
+    )
     parser.add_argument(
-        '-m',
-        '--max_num_frames',
+        "-m",
+        "--max_num_frames",
         type=int,
         default=200_000,
-        help="Maximum number of frames to be processed. [Default: 200000]")
-    
+        help="Maximum number of frames to be processed. [Default: 200000]",
+    )
+
     parser.add_argument(
-        '-c',
-        '--crop_side',
+        "-c",
+        "--crop_side",
         type=int,
         default=0,
-        help="Crop a center square from the video with the specified side. 0 means don't crop. [Default: 0]")
+        help=
+        "Crop a center square from the video with the specified side. 0 means don't crop. [Default: 0]",
+    )
     options = parser.parse_args()
 
     return options
@@ -92,21 +104,29 @@ def parse_cli():
     program_name="Source-encode SSIM calculator",
     program_description=
     "Calculates the SSIM score frame by frame between a source and encode.\nRequires both to have the same resolution and number of frames",
-    default_size=(610, 610)
+    default_size=(610, 610),
 )
 def main():
     cli = parse_cli()
     plt.figure(f"SSIM Score for {cli.source_path}")
     plt.xlabel("Frame number")
     plt.ylabel("SSIM Score")
-    frames, scores = calculate_ssim_score(cli.source_path,
-                                   cli.encode_path,
-                                   n_skip_frames=cli.num_skip_frames,
-                                   max_frames=cli.max_num_frames + 1,
-                                   crop_side=cli.crop_side)
+    frames, scores = calculate_ssim_score(
+        cli.source_path,
+        cli.encode_path,
+        n_skip_frames=cli.num_skip_frames,
+        max_frames=cli.max_num_frames + 1,
+        crop_side=cli.crop_side,
+    )
     avg_score = np.average(scores)
-    plt.plot(frames, scores, label = "Current SSIM score")
-    plt.hlines([avg_score], xmin=frames[0], xmax=frames[-1], colors = ["red"], label=f"Average SSIM score: {avg_score:.3f}")
+    plt.plot(frames, scores, label="Current SSIM score")
+    plt.hlines(
+        [avg_score],
+        xmin=frames[0],
+        xmax=frames[-1],
+        colors=["red"],
+        label=f"Average SSIM score: {avg_score:.3f}",
+    )
     print(f"Average SSIM score for whole video: {avg_score}")
     plt.legend()
     plt.show()
