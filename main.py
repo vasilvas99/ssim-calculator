@@ -89,7 +89,6 @@ def parse_cli():
         default=500,
         help="Maximum number of frames to be processed. [Default: 500]",
     )
-
     parser.add_argument(
         "-c",
         "--crop_side",
@@ -98,8 +97,8 @@ def parse_cli():
         help=
         "Crop a center square from the video with the specified side. 0 means don't crop. [Default: 0]",
     )
+    
     options = parser.parse_args()
-
     return options
 
 
