@@ -46,8 +46,7 @@ def calculate_ssim_score(video_a_path,
             break
         if idx % n_skip_frames != 0:
             continue
-        percent_done =  idx/max_frames * 100
-        print(f'Processing frame {idx} out of {max_frames} ({percent_done:.4f}%)')
+        
         ssim_results.append(
             calculate_frame_similarity(frame_a, frame_b, crop_side))
         processed_frames.append(idx)
